@@ -87,13 +87,20 @@ export default function FoodClassifier() {
     setPredictions([]);
 
     try {
-      const { Client } = await import('@gradio/client');
-      
-      const client = await Client.connect('blackhacker/bangla-diet');
-      const result = await client.predict('/predict_image', {
-        image: selectedFile,
-        top_k: topK,
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+      formData.append('top_k', String(topK));
+
+      const response = await fetch('/api/food/classify', {
+        method: 'POST',
+        body: formData,
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to classify image');
+      }
 
       const data = result.data;
       
